@@ -1,0 +1,134 @@
+# ==========================
+# .gitignore - Encurtai Monorepo (Java / Spring Boot / Gradle)
+# ==========================
+# Mantém no repositório apenas código-fonte e arquivos necessários
+# Evita incluir artefatos de build, caches locais, configs de IDE e segredos.
+
+# ---- SO / Sistema Operacional ----
+.DS_Store
+Thumbs.db
+$RECYCLE.BIN/
+# REMOVIDO: padrão global '*' que ignorava tudo no repositório e causava a não inclusão da pasta short-link-key-service.
+# Caso precise ignorar apenas arquivos soltos na raiz (e manter pastas), use padrões mais seguros como abaixo:
+# Ignore qualquer arquivo solto na raiz que não esteja listado explicitamente (opcional). Comentado para evitar surpresas.
+# /*
+# !/.gitignore
+# !/README.md
+# !/docker-compose.yml
+
+
+# ---- Logs ----
+*.log
+logs/
+*.pid
+*.seed
+*.out
+hs_err_pid*
+replay_pid*
+
+# ---- Arquivos temporários / swap ----
+*.swp
+*.swo
+*.tmp
+*.temp
+~$*
+
+# ---- Java / Compilação ----
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# ---- Gradle ----
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+# Cache local do Gradle (opcional ignorar)
+.gradle-cache/
+
+# ---- Spring Boot ----
+# Arquivos de configuração específicos de ambientes (se forem gerados localmente)
+application-*.yml
+application-*.yaml
+application-*.properties
+!application.properties  # mantém o default versionado
+
+# ---- IDEs ----
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+# Eclipse
+.project
+.classpath
+.settings/
+# VS Code
+.vscode/
+
+# ---- Ferramentas / Coverage ----
+coverage/
+**/jacoco.exec
+**/jacoco/*.exec
+*.lcov
+
+# ---- Docker / Container ----
+# Imagens ou camadas exportadas
+*.tar
+# Arquivos de ambiente (segredos locais)
+.env
+.env.*
+!env.example
+
+# ---- Segurança / Chaves ----
+*.keystore
+*.jks
+*.p12
+*.pem
+*.crt
+*.key
+
+# ---- Arquivos de sistema / backup ----
+*.bak
+*.orig
+*.rej
+
+# ---- Node / Front-end eventual ----
+node_modules/
+*.tsbuildinfo
+
+# ---- Outros caches ----
+.cache/
+.tmp/
+.sass-cache/
+
+# ---- Testes ----
+.test-results/
+**/test-output/
+
+# ---- VS Code Workspace específico ----
+*.code-workspace
+
+# ---- Arquivos gerados por ferramentas diversas ----
+.idea_modules/
+
+# ---- Exceções (forçar inclusão de scripts importantes) ----
+!gradlew
+!gradlew.bat
+!**/build.gradle
+!**/settings.gradle
+!docker-compose.yml
+!**/Dockerfile
+
+# ---- Observações ----
+# Se você quiser versionar um application-<profile>.properties específico, remova a regra correspondente acima.
+# Após adicionar este .gitignore, remova artefatos já versionados com:
+#   git rm -r --cached shortlink-service/build
+#   git rm -r --cached redirect-service/build
+#   git rm -r --cached shortlink-manager-service/build
+# E depois faça commit.
