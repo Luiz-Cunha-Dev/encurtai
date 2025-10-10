@@ -1,0 +1,13 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: test-service
+    url: http://http-echo:5678
+    routes:
+      - name: test-route
+        paths:
+          - /test-service
+        methods:
+          - GET
+        strip_path: true

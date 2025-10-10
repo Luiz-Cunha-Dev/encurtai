@@ -1,0 +1,25 @@
+services:
+  kong:
+    image: kong:3.9.1
+    container_name: encurta-ai-kong
+    ports:
+      - "8000:8000"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong-config.yaml
+      KONG_PLUGINS: bundled
+    volumes:
+      - ./kong/kong-config.yaml:/etc/kong/kong-config.yaml
+    networks:
+      - encurta-ai-network
+
+  http-echo:
+    image: hashicorp/http-echo
+    container_name: encurta-ai-http-echo
+    command: ["-text={\"message\": \"Hello World!\"}"]
+    networks:
+      -  encurta-ai-network
+
+networks:
+  encurta-ai-network:
+    driver: bridge
