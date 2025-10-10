@@ -13,12 +13,80 @@ services:
     networks:
       - encurta-ai-network
 
+  consul:
+    image: hashicorp/consul:1.19
+    container_name: encurta-ai-consul
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+      - "8502:8502"
+    command: >
+      consul agent -dev
+      -client=0.0.0.0
+      -ui
+      -config-dir=/consul/config
+    volumes:
+      - ./consul/config:/consul/config
+      - ./consul/policies:/consul/policies
+    networks:
+      - encurta-ai-network
+  
+  consul-config:
+    image: hashicorp/consul:1.19
+    container_name: encurta-ai-consul-config-loader
+    volumes:
+      - ./consul/policies:/policies
+    networks:
+      - encurta-ai-network
+    depends_on:
+      - consul
+    command: >
+      sh -c "
+        sleep 15 &&
+        echo 'Applying Consul configurations...' &&
+        consul config write -http-addr=consul:8500 /policies/proxy-defaults.hcl &&
+        consul config write -http-addr=consul:8500 /policies/ingress.hcl &&
+        echo 'Configurations applied successfully!'
+      "
+  
   http-echo:
     image: hashicorp/http-echo
     container_name: encurta-ai-http-echo
     command: ["-text={\"message\": \"Hello World!\"}"]
     networks:
-      -  encurta-ai-network
+      - encurta-ai-network
+
+  http-echo-sidecar:
+    build:
+      context: /consul/envoy
+      dockerfile: Dockerfile
+    container_name: encurta-ai-http-echo-sidecar
+    command: >
+      consul connect envoy -sidecar-for http-echo
+      -http-addr=consul:8500
+      -grpc-addr=consul:8502
+      -admin-bind=0.0.0.0:21000 
+      -ignore-envoy-compatibility
+      -- -l debug
+    environment:
+      CONSUL_HTTP_ADDR: "consul:8500"
+      CONSUL_GRPC_ADDR: "consul:8502"
+    networks:
+      - encurta-ai-network
+    depends_on:
+      - http-echo
+      - consul
+      - consul-config
+
+  debug-container:
+    image: alpine:latest
+    container_name: encurta-ai-debug
+    command: sh -c "apk add curl bind-tools netcat-openbsd && tail -f /dev/null"
+    networks:
+      - encurta-ai-network
+    depends_on:
+      - consul
+      - http-echo
 
 networks:
   encurta-ai-network:

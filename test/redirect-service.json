@@ -1,0 +1,13 @@
+{
+  "service": {
+    "name": "redirect-service",
+    "port": 8082,
+    "connect": { "sidecar_service": {} },
+    "checks": [
+      {
+        "http": "http://redirect-service:8082/actuator/health",
+        "interval": "5s"
+      }
+    ]
+  }
+}
