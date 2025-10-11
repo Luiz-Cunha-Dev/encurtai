@@ -11,7 +11,8 @@ services:
     volumes:
       - ./kong/kong-config.yaml:/etc/kong/kong-config.yaml
     networks:
-      - encurta-ai-network
+      encurta-ai-network:
+        ipv4_address: 172.20.0.20
 
   consul:
     image: hashicorp/consul:1.19
@@ -29,7 +30,8 @@ services:
       - ./consul/config:/consul/config
       - ./consul/policies:/consul/policies
     networks:
-      - encurta-ai-network
+      encurta-ai-network:
+        ipv4_address: 172.20.0.10
   
   consul-config:
     image: hashicorp/consul:1.19
@@ -37,57 +39,91 @@ services:
     volumes:
       - ./consul/policies:/policies
     networks:
-      - encurta-ai-network
+      encurta-ai-network:
+        ipv4_address: 172.20.0.50
     depends_on:
       - consul
     command: >
       sh -c "
         sleep 15 &&
         echo 'Applying Consul configurations...' &&
-        consul config write -http-addr=consul:8500 /policies/proxy-defaults.hcl &&
-        consul config write -http-addr=consul:8500 /policies/ingress.hcl &&
+        consul config write -http-addr=172.20.0.10:8500 /policies/proxy-defaults.hcl &&
         echo 'Configurations applied successfully!'
       "
   
   http-echo:
-    image: hashicorp/http-echo
+    image: nginx:alpine
     container_name: encurta-ai-http-echo
-    command: ["-text={\"message\": \"Hello World!\"}"]
+    command: >
+      sh -c "
+        echo 'server { 
+          listen 5678; 
+          location / { 
+            return 500 \"Internal Server Error\"; 
+          } 
+        }' > /etc/nginx/conf.d/default.conf && 
+        nginx -g 'daemon off;'
+      "
     networks:
-      - encurta-ai-network
+      encurta-ai-network:
+        ipv4_address: 172.20.0.30
 
   http-echo-sidecar:
     build:
-      context: /consul/envoy
+      context: ./consul/envoy
       dockerfile: Dockerfile
     container_name: encurta-ai-http-echo-sidecar
+    network_mode: "container:encurta-ai-http-echo"
     command: >
       consul connect envoy -sidecar-for http-echo
-      -http-addr=consul:8500
-      -grpc-addr=consul:8502
-      -admin-bind=0.0.0.0:21000 
+      -http-addr=172.20.0.10:8500
+      -grpc-addr=172.20.0.10:8502
+      -admin-bind=127.0.0.1:19000
       -ignore-envoy-compatibility
       -- -l debug
     environment:
-      CONSUL_HTTP_ADDR: "consul:8500"
-      CONSUL_GRPC_ADDR: "consul:8502"
-    networks:
-      - encurta-ai-network
+      CONSUL_HTTP_ADDR: "172.20.0.10:8500"
+      CONSUL_GRPC_ADDR: "172.20.0.10:8502"
     depends_on:
       - http-echo
       - consul
       - consul-config
 
-  debug-container:
-    image: alpine:latest
-    container_name: encurta-ai-debug
-    command: sh -c "apk add curl bind-tools netcat-openbsd && tail -f /dev/null"
+  node-client:
+    build: ./node-client
+    container_name: encurta-ai-node-client
+    environment:
+      - TARGET=http://127.0.0.1:9191
     networks:
-      - encurta-ai-network
+      encurta-ai-network:
+        ipv4_address: 172.20.0.40
     depends_on:
       - consul
+      - consul-config
       - http-echo
+      - http-echo-sidecar
+
+  node-client-sidecar:
+    build:
+      context: ./consul/envoy
+      dockerfile: Dockerfile
+    container_name: encurta-ai-node-client-sidecar
+    network_mode: "container:encurta-ai-node-client"
+    command: >
+      consul connect envoy -sidecar-for node-client
+      -http-addr=172.20.0.10:8500
+      -grpc-addr=172.20.0.10:8502
+      -admin-bind=127.0.0.1:19000
+      -ignore-envoy-compatibility
+      -- -l debug
+    environment:
+      CONSUL_HTTP_ADDR: "172.20.0.10:8500"
+      CONSUL_GRPC_ADDR: "172.20.0.10:8502"
+    depends_on:
+      - node-client
+      - consul
+      - consul-config
 
 networks:
   encurta-ai-network:
-    driver: bridge
+    external: true

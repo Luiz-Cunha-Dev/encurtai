@@ -1,0 +1,12 @@
+{
+  "name": "node-client",
+  "version": "1.0.0",
+  "description": "Simple Node client to call http-echo through Consul service mesh",
+  "main": "client.js",
+  "scripts": {
+    "start": "node client.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.4"
+  }
+}
