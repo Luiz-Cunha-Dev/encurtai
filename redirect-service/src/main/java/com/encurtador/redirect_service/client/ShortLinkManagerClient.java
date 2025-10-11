@@ -35,4 +35,3 @@ public class ShortLinkManagerClient {
 // integracao/e2e teste do controller como um fluxo, ou seja, vai ser chamado o endpoint
 // usa junit, mockito e WireMock (mockar short link managar client response)
 //dockerfile
-//ignorar tudo que o bruno escreveu
