@@ -1,0 +1,32 @@
+{
+  "service": {
+    "id": "http-echo",
+    "name": "http-echo",
+    "address": "http-echo",
+    "port": 5678,
+    "connect": {
+      "sidecar_service": {
+        "proxy": {
+          "config": {
+            "bind_address": "0.0.0.0",
+            "bind_port": 20000,
+            "local_service_address": "http-echo",
+            "local_service_port": 5678
+          }
+        },
+        "check": {
+          "tcp": "http-echo:5678",
+          "interval": "10s",
+          "timeout": "3s"
+        }
+      }
+    },
+    "checks": [
+      {
+        "http": "http://http-echo:5678",
+        "interval": "10s",
+        "timeout": "3s"
+      }
+    ]
+  }
+}

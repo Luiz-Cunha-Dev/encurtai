@@ -11,3 +11,25 @@ services:
         methods:
           - GET
         strip_path: true
+
+  - name: shortlink-manager-service
+    url: http://shortlink-manager-service:8080
+    routes:
+      - name: shortlink-manager-service-route
+        paths:
+          - /sms
+        methods:
+          - GET
+          - POST
+          - DELETE
+        strip_path: true
+
+  - name: redirect-service
+    url: http://redirect-service:8082
+    routes:
+      - name: redirect-service-route
+        paths:
+          - /rs
+        methods:
+          - GET
+        strip_path: true

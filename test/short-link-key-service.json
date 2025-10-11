@@ -1,0 +1,13 @@
+{
+  "service": {
+    "name": "short-link-key-service",
+    "port": 8081,
+    "connect": { "sidecar_service": {} },
+    "checks": [
+      {
+        "http": "http://short-link-key-service:8081/actuator/health",
+        "interval": "5s"
+      }
+    ]
+  }
+}
