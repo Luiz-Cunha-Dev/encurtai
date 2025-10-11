@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Copia o jar gerado pelo build
-COPY build/libs/*.jar app.jar
+COPY target/*.jar app.jar
 
 # Expõe a porta do serviço
 EXPOSE 8081
