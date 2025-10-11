@@ -14,8 +14,6 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class ShortLinkManagerClient {
 
-    // criar classe com anotacao configuration que devolva um bean configurado de webclient
-    //package configuration pode ser
     private final WebClient webClient;
 
     @CircuitBreaker(name = "shortLinkManager", fallbackMethod = "fallbackGetMainUrl")
@@ -31,3 +29,10 @@ public class ShortLinkManagerClient {
         return Mono.error(new RuntimeException("Failed to fetch main URL for token: " + token, t));
     }
 }
+
+// lib testes
+/// unitario junit mockito
+// integracao/e2e teste do controller como um fluxo, ou seja, vai ser chamado o endpoint
+// usa junit, mockito e WireMock (mockar short link managar client response)
+//dockerfile
+//ignorar tudo que o bruno escreveu
