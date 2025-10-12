@@ -1,0 +1,8 @@
+{
+  "service": {
+    "id": "ingress-gateway",
+    "name": "ingress-gateway",
+    "kind": "ingress-gateway",
+    "address": "10.200.0.80"
+  }
+}
