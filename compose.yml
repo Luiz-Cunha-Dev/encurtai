@@ -112,6 +112,36 @@ services:
       - consul
       - consul-config
 
+  short-link-key-service:
+    build:
+      context: ./short-link-key-service
+      dockerfile: Dockerfile
+    container_name: encurta-ai-short-link-key-service
+    networks:
+      encurta-ai-network:
+        ipv4_address: 10.200.0.70
+
+  short-link-key-sidecar:
+    build:
+      context: ./consul/envoy
+      dockerfile: Dockerfile
+    container_name: encurta-ai-short-link-key-sidecar
+    network_mode: "container:encurta-ai-short-link-key-service"
+    command: >
+      consul connect envoy -sidecar-for short-link-key-service
+      -http-addr=10.200.0.20:8500
+      -grpc-addr=10.200.0.20:8502
+      -admin-bind=127.0.0.1:19000
+      -ignore-envoy-compatibility
+      -- -l trace
+    environment:
+      CONSUL_HTTP_ADDR: "10.200.0.20:8500"
+      CONSUL_GRPC_ADDR: "10.200.0.20:8502"
+    depends_on:
+      - short-link-key-service
+      - consul
+      - consul-config
+
   consul-ingress-gateway:
     build:
       context: ./consul/envoy

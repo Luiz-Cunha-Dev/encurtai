@@ -1,5 +1,6 @@
 package com.encurtador.short_link_manager_service.service
 
+import com.encurtador.short_link_manager_service.client.ShortLinkKeyServiceClient
 import com.encurtador.short_link_manager_service.dto.ShortenLinkResponseDto
 import com.encurtador.short_link_manager_service.model.ShortenedLink
 import com.encurtador.short_link_manager_service.repository.ShortLinkManagerRepository
@@ -10,15 +11,16 @@ import org.springframework.stereotype.Service
 class ShortenLinkService(
     private val repository: ShortLinkManagerRepository,
     @Value("\${encurta-ai.kong.url}")
-    private val kongUrl: String
+    private val kongUrl: String,
+    private val client: ShortLinkKeyServiceClient
 ) {
     fun execute(mainUrl: String): ShortenLinkResponseDto {
         if (!isUrlValid(mainUrl)) {
             throw IllegalArgumentException("Invalid URL format")
         }
 
-        val urlKey = mockShortUrlKey()
-        val shortenedUrl = generateShortenedUrl(urlKey)
+        val keyResponse = client.getUniqueTokenId()
+        val shortenedUrl = generateShortenedUrl(keyResponse.uniqueTokenId)
         val shortenedLink = ShortenedLink(
             mainUrl = mainUrl,
             shortenedUrl = shortenedUrl
@@ -31,12 +33,6 @@ class ShortenLinkService(
     private fun isUrlValid(url: String): Boolean {
         val urlRegex = "^(https?://)[\\w\\-]+(\\.[\\w\\-]+)+[/#?]?.*$".toRegex()
         return url.matches(urlRegex)
-    }
-
-    private fun mockShortUrlKey(): String {
-        return List(6) {
-            (('a'..'z') + ('A'..'Z') + ('0'..'9')).random()
-        }.joinToString("")
     }
 
     private fun generateShortenedUrl(shortUrlKey: String): String {

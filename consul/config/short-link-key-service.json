@@ -1,0 +1,25 @@
+{
+  "service": {
+    "id": "short-link-key-service",
+    "name": "short-link-key-service",
+    "address": "10.200.0.70",
+    "port": 8081,
+    "connect": {
+      "sidecar_service": {
+        "proxy": {
+          "config": {
+            "local_service_address": "127.0.0.1",
+            "local_service_port": 8081
+          }
+        }
+      }
+    },
+    "checks": [
+      {
+        "http": "http://10.200.0.70:8081/actuator/health",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    ]
+  }
+}

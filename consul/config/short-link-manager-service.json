@@ -10,7 +10,13 @@
           "config": {
             "local_service_address": "127.0.0.1",
             "local_service_port": 8080
-          }
+          },
+          "upstreams": [
+            {
+              "destination_name": "short-link-key-service",
+              "local_bind_port": 9090
+            }
+          ]
         }
       }
     },
