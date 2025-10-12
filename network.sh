@@ -14,13 +14,13 @@ docker network create \
     encurta-ai-network
 
 if docker network inspect encurta-ai-network >/dev/null 2>&1; then
-        echo "Network created successfully!"
-        echo ""
-        echo "Network information:"
-        docker network inspect encurta-ai-network --format="{{.Name}}: {{.IPAM.Config}}"
-        echo ""
-        echo "Available IP ranges: 10.200.0.10 - 10.200.0.100"
+    echo "Network created successfully!"
+    echo ""
+    echo "Network information:"
+    docker network inspect encurta-ai-network --format="{{.Name}}: {{.IPAM.Config}}"
+    echo ""
+    echo "Available IP ranges: 10.200.0.10 - 10.200.0.100"
 else
-        echo "Error creating the network!"
-        exit 1
+    echo "Error creating the network!"
+    exit 1
 fi
