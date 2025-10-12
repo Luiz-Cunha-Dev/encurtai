@@ -8,7 +8,6 @@ services:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /etc/kong/kong-config.yaml
       KONG_PLUGINS: bundled
-      KONG_LOG_LEVEL: debug
     volumes:
       - ./kong/kong-config.yaml:/etc/kong/kong-config.yaml
     networks:
@@ -49,6 +48,7 @@ services:
         sleep 15 &&
         echo 'Applying Consul configurations...' &&
         consul config write -http-addr=10.200.0.20:8500 /policies/proxy-defaults.hcl &&
+        consul config write -http-addr=10.200.0.20:8500 /policies/ingress-gateway.hcl &&
         echo 'Configurations applied successfully!'
       "
 
@@ -73,7 +73,7 @@ services:
       -grpc-addr=10.200.0.20:8502
       -admin-bind=127.0.0.1:19000
       -ignore-envoy-compatibility
-      -- -l debug
+      -- -l trace
     environment:
       CONSUL_HTTP_ADDR: "10.200.0.20:8500"
       CONSUL_GRPC_ADDR: "10.200.0.20:8502"
@@ -103,12 +103,37 @@ services:
       -grpc-addr=10.200.0.20:8502
       -admin-bind=127.0.0.1:19000
       -ignore-envoy-compatibility
-      -- -l debug
+      -- -l trace
     environment:
       CONSUL_HTTP_ADDR: "10.200.0.20:8500"
       CONSUL_GRPC_ADDR: "10.200.0.20:8502"
     depends_on:
       - redirect-service
+      - consul
+      - consul-config
+
+  consul-ingress-gateway:
+    build:
+      context: ./consul/envoy
+      dockerfile: Dockerfile
+    container_name: encurta-ai-consul-ingress-gateway
+    command: >
+      consul connect envoy
+      -gateway=ingress 
+      -register=false
+      -service=ingress-gateway
+      -http-addr=10.200.0.20:8500
+      -grpc-addr=10.200.0.20:8502
+      -admin-bind=127.0.0.1:19000
+      -ignore-envoy-compatibility
+      -- -l trace
+    environment:
+      CONSUL_HTTP_ADDR: "10.200.0.20:8500"
+      CONSUL_GRPC_ADDR: "10.200.0.20:8502"
+    networks:
+      encurta-ai-network:
+        ipv4_address: 10.200.0.80
+    depends_on:
       - consul
       - consul-config
 
