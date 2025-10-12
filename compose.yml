@@ -8,11 +8,12 @@ services:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /etc/kong/kong-config.yaml
       KONG_PLUGINS: bundled
+      KONG_LOG_LEVEL: debug
     volumes:
       - ./kong/kong-config.yaml:/etc/kong/kong-config.yaml
     networks:
       encurta-ai-network:
-        ipv4_address: 172.20.0.20
+        ipv4_address: 10.200.0.10
 
   consul:
     image: hashicorp/consul:1.19
@@ -31,7 +32,7 @@ services:
       - ./consul/policies:/consul/policies
     networks:
       encurta-ai-network:
-        ipv4_address: 172.20.0.10
+        ipv4_address: 10.200.0.20
   
   consul-config:
     image: hashicorp/consul:1.19
@@ -40,87 +41,74 @@ services:
       - ./consul/policies:/policies
     networks:
       encurta-ai-network:
-        ipv4_address: 172.20.0.50
+        ipv4_address: 10.200.0.30
     depends_on:
       - consul
     command: >
       sh -c "
         sleep 15 &&
         echo 'Applying Consul configurations...' &&
-        consul config write -http-addr=172.20.0.10:8500 /policies/proxy-defaults.hcl &&
+        consul config write -http-addr=10.200.0.20:8500 /policies/proxy-defaults.hcl &&
         echo 'Configurations applied successfully!'
       "
-  
-  http-echo:
-    image: nginx:alpine
-    container_name: encurta-ai-http-echo
-    command: >
-      sh -c "
-        echo 'server { 
-          listen 5678; 
-          location / { 
-            return 500 \"Internal Server Error\"; 
-          } 
-        }' > /etc/nginx/conf.d/default.conf && 
-        nginx -g 'daemon off;'
-      "
+
+  short-link-manager-service:
+    build:
+      context: ./short-link-manager-service
+      dockerfile: Dockerfile
+    container_name: encurta-ai-short-link-manager-service
     networks:
       encurta-ai-network:
-        ipv4_address: 172.20.0.30
+        ipv4_address: 10.200.0.40
 
-  http-echo-sidecar:
+  short-link-manager-sidecar:
     build:
       context: ./consul/envoy
       dockerfile: Dockerfile
-    container_name: encurta-ai-http-echo-sidecar
-    network_mode: "container:encurta-ai-http-echo"
+    container_name: encurta-ai-short-link-manager-sidecar
+    network_mode: "container:encurta-ai-short-link-manager-service"
     command: >
-      consul connect envoy -sidecar-for http-echo
-      -http-addr=172.20.0.10:8500
-      -grpc-addr=172.20.0.10:8502
+      consul connect envoy -sidecar-for short-link-manager-service
+      -http-addr=10.200.0.20:8500
+      -grpc-addr=10.200.0.20:8502
       -admin-bind=127.0.0.1:19000
       -ignore-envoy-compatibility
       -- -l debug
     environment:
-      CONSUL_HTTP_ADDR: "172.20.0.10:8500"
-      CONSUL_GRPC_ADDR: "172.20.0.10:8502"
+      CONSUL_HTTP_ADDR: "10.200.0.20:8500"
+      CONSUL_GRPC_ADDR: "10.200.0.20:8502"
     depends_on:
-      - http-echo
+      - short-link-manager-service
       - consul
       - consul-config
 
-  node-client:
-    build: ./node-client
-    container_name: encurta-ai-node-client
-    environment:
-      - TARGET=http://127.0.0.1:9191
+  redirect-service:
+    build:
+      context: ./redirect-service
+      dockerfile: Dockerfile
+    container_name: encurta-ai-redirect-service
     networks:
       encurta-ai-network:
-        ipv4_address: 172.20.0.40
-    depends_on:
-      - consul
-      - consul-config
-      - http-echo
-      - http-echo-sidecar
+        ipv4_address: 10.200.0.60
 
-  node-client-sidecar:
+  redirect-service-sidecar:
     build:
       context: ./consul/envoy
       dockerfile: Dockerfile
-    container_name: encurta-ai-node-client-sidecar
-    network_mode: "container:encurta-ai-node-client"
+    container_name: encurta-ai-redirect-service-sidecar
+    network_mode: "container:encurta-ai-redirect-service"
     command: >
-      consul connect envoy -sidecar-for node-client
-      -http-addr=172.20.0.10:8500
-      -grpc-addr=172.20.0.10:8502
+      consul connect envoy -sidecar-for redirect-service
+      -http-addr=10.200.0.20:8500
+      -grpc-addr=10.200.0.20:8502
       -admin-bind=127.0.0.1:19000
       -ignore-envoy-compatibility
       -- -l debug
     environment:
-      CONSUL_HTTP_ADDR: "172.20.0.10:8500"
-      CONSUL_GRPC_ADDR: "172.20.0.10:8502"
+      CONSUL_HTTP_ADDR: "10.200.0.20:8500"
+      CONSUL_GRPC_ADDR: "10.200.0.20:8502"
     depends_on:
-      - node-client
+      - redirect-service
       - consul
       - consul-config
 

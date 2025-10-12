@@ -1,6 +1,5 @@
 package com.encurtador.short_link_manager_service.controller
 
-import com.encurtador.short_link_manager_service.config.GlobalExceptionHandler
 import com.encurtador.short_link_manager_service.dto.GetAllLinksResponseDto
 import com.encurtador.short_link_manager_service.dto.LinkResponseDto
 import com.encurtador.short_link_manager_service.dto.ShortenLinkRequestDto
@@ -12,15 +11,7 @@ import com.encurtador.short_link_manager_service.service.ShortenLinkService
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/")
@@ -30,12 +21,12 @@ class ShortLinkManagerController (
     private val getLinkService: GetLinkService,
     private val deleteLinkService: DeleteLinkService
 ) {
-    private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+    private val log = LoggerFactory.getLogger(ShortLinkManagerController::class.java)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun shortenLink(
-        @Valid request: ShortenLinkRequestDto
+        @Valid @RequestBody request: ShortenLinkRequestDto
     ): ShortenLinkResponseDto {
         log.info("Received POST request to shorten URL, request: $request")
         return shortenLinkService.execute(request.mainUrl).also {

@@ -1,6 +1,7 @@
 package com.encurtador.redirect_service.service;
 
 import com.encurtador.redirect_service.client.ShortLinkManagerClient;
+import com.encurtador.redirect_service.dto.GetMainUrlResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,6 @@ public class RedirectService {
 
     public Mono<String> getMainUrl(String shortUrlKey) {
         return shortLinkManagerClient.getMainUrl(shortUrlKey)
-                .map(response -> response.mainUrl());
+                .map(GetMainUrlResponseDto::mainUrl);
     }
 }

@@ -1,4 +1,3 @@
-// src/main/java/com/encurtador/redirect_service/config/WebClientConfig.java
 package com.encurtador.redirect_service.config;
 
 import org.springframework.context.annotation.Bean;

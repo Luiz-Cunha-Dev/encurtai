@@ -1,0 +1,31 @@
+{
+  "service": {
+    "id": "redirect-service",
+    "name": "redirect-service",
+    "address": "10.200.0.60",
+    "port": 8083,
+    "connect": {
+      "sidecar_service": {
+        "proxy": {
+          "config": {
+            "local_service_address": "127.0.0.1",
+            "local_service_port": 8083
+          },
+          "upstreams": [
+            {
+              "destination_name": "short-link-manager-service",
+              "local_bind_port": 9090
+            }
+          ]
+        }
+      }
+    },
+    "checks": [
+      {
+        "http": "http://10.200.0.60:8083/actuator/health",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    ]
+  }
+}

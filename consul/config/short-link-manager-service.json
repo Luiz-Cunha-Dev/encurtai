@@ -1,0 +1,25 @@
+{
+  "service": {
+    "id": "short-link-manager-service",
+    "name": "short-link-manager-service",
+    "address": "10.200.0.40",
+    "port": 8080,
+    "connect": {
+      "sidecar_service": {
+        "proxy": {
+          "config": {
+            "local_service_address": "127.0.0.1",
+            "local_service_port": 8080
+          }
+        }
+      }
+    },
+    "checks": [
+      {
+        "http": "http://10.200.0.40:8080/actuator/health",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    ]
+  }
+}
