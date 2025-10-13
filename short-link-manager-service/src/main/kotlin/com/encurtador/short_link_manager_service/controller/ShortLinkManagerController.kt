@@ -37,8 +37,8 @@ class ShortLinkManagerController (
 
     @GetMapping
     fun getAllLinks(
-        @RequestParam(required = false, defaultValue = "1") @Min(1) page: Int = 1,
-        @RequestParam(required = false, defaultValue = "10") limit: Int = 10
+        @RequestParam(required = false) page: Int = 0,
+        @RequestParam(required = false) limit: Int = 10
     ): GetAllLinksResponseDto {
         log.info("Received GET request to fetch all links, page: $page, limit: $limit")
         return getAllLinksService.execute(page, limit).also {

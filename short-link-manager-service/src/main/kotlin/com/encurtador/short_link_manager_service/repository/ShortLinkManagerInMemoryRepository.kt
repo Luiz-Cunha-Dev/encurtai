@@ -13,7 +13,7 @@ class ShortLinkManagerInMemoryRepository : ShortLinkManagerRepository {
     }
 
     override fun findAll(page: Int, limit: Int): List<ShortenedLink> {
-        val fromIndex = (page - 1) * limit
+        val fromIndex = page * limit
         val toIndex = (fromIndex + limit).coerceAtMost(storage.size)
         return if (fromIndex >= storage.size) {
             emptyList()
