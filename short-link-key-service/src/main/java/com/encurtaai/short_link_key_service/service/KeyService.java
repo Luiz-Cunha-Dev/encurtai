@@ -1,20 +1,26 @@
 package com.encurtaai.short_link_key_service.service;
 
-import com.encurtaai.short_link_key_service.dto.KeyResponseDTO;
 import com.encurtaai.short_link_key_service.model.Key;
 import com.encurtaai.short_link_key_service.repository.KeyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.UUID;
-
 @Service
+@RequiredArgsConstructor
 public class KeyService {
+    private final KeyRepository repository;
 
-    @Autowired
-    private KeyRepository keyRepository;
+    public Key saveKey() {
+        String keyString = this.generateUniqueToken();
+
+        while (repository.exists(keyString)) {
+            keyString = this.generateUniqueToken();
+        }
+
+        Key key = new Key(keyString);
+        repository.save(key);
+        return key;
+    }
 
     private String generateUniqueToken() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -25,17 +31,5 @@ public class KeyService {
         }
 
         return token.toString();
-    }
-
-    public Key saveKey() {
-        String keyString = this.generateUniqueToken();
-
-        while (keyRepository.existsByUniqueTokenId(keyString)) {
-            keyString = this.generateUniqueToken();
-        }
-
-        Key key = new Key(keyString);
-        keyRepository.saveKey(key);
-        return key;
     }
 }

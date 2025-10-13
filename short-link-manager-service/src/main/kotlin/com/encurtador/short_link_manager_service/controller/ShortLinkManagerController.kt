@@ -9,6 +9,7 @@ import com.encurtador.short_link_manager_service.service.GetAllLinksService
 import com.encurtador.short_link_manager_service.service.GetLinkService
 import com.encurtador.short_link_manager_service.service.ShortenLinkService
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -36,8 +37,8 @@ class ShortLinkManagerController (
 
     @GetMapping
     fun getAllLinks(
-        @RequestParam(required = false) page: Int = 0,
-        @RequestParam(required = false) limit: Int = 10
+        @RequestParam(required = false, defaultValue = "1") @Min(1) page: Int = 1,
+        @RequestParam(required = false, defaultValue = "10") limit: Int = 10
     ): GetAllLinksResponseDto {
         log.info("Received GET request to fetch all links, page: $page, limit: $limit")
         return getAllLinksService.execute(page, limit).also {
