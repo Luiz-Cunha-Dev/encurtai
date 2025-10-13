@@ -54,7 +54,7 @@ const formSchema = z.object({
 export function UrlShortener() {
   const [links, setLinks] = useState<ShortLink[]>([]);
   const [pagination, setPagination] = useState<PaginationType>({
-    page: 1,
+    page: 0,
     limit: 5,
     total: 0,
   });
@@ -93,11 +93,11 @@ export function UrlShortener() {
     try {
       const newLink = await createShortLink(values.mainUrl);
       toast.success("URL encurtada com sucesso!", {
-        description: `Sua URL curta é: ${newLink.shortedUrl}`,
+        description: `Sua URL curta é: ${newLink.shortenedUrl}`,
       });
       form.reset();
-      if (pagination.page !== 1) {
-        handlePageChange(1);
+      if (pagination.page !== 0) {
+        handlePageChange(0);
       } else {
         fetchLinks();
       }
@@ -121,7 +121,7 @@ export function UrlShortener() {
     try {
       await deleteShortLink(token);
       toast.success("Link excluído com sucesso.");
-      if (links.length === 1 && pagination.page > 1) {
+      if (links.length === 1 && pagination.page > 0) {
         handlePageChange(pagination.page - 1);
       } else {
         fetchLinks();
@@ -143,10 +143,10 @@ export function UrlShortener() {
 
   const handlePageChange = (newPage: number) => {
     const totalPages = Math.ceil(pagination.total / pagination.limit);
-    if (newPage >= 1 && newPage <= totalPages) {
+    if (newPage >= 0 && newPage < totalPages) {
         setPagination(prev => ({ ...prev, page: newPage }));
-    } else if (newPage < 1 && totalPages > 0) {
-        setPagination(prev => ({ ...prev, page: 1 }));
+    } else if (newPage < 0 && totalPages > 0) {
+        setPagination(prev => ({ ...prev, page: 0 }));
     }
   };
 
@@ -158,8 +158,8 @@ export function UrlShortener() {
     const left = pagination.page - delta;
     const right = pagination.page + delta;
 
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+    for (let i = 0; i < totalPages; i++) {
+      if (i === 0 || i === totalPages - 1 || (i >= left && i <= right)) {
         range.push(i);
       }
     }
@@ -167,7 +167,7 @@ export function UrlShortener() {
     const withDots: (number | string)[] = [];
     let last: number | undefined;
     for (const page of range) {
-      if (last) {
+      if (last !== undefined) {
         if (page - last === 2) {
           withDots.push(last + 1);
         } else if (page - last !== 1) {
@@ -251,7 +251,7 @@ export function UrlShortener() {
                   ))
                 ) : links.length > 0 ? (
                   links.map((link) => (
-                    <TableRow key={link.shortedUrl}>
+                    <TableRow key={link.shortenedUrl}>
                       <TableCell className="max-w-xs truncate">
                         <a
                           href={link.mainUrl}
@@ -264,19 +264,19 @@ export function UrlShortener() {
                       </TableCell>
                       <TableCell>
                         <a
-                          href={link.shortedUrl}
+                          href={link.shortenedUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="hover:underline text-primary"
                         >
-                          {link.shortedUrl}
+                          {link.shortenedUrl}
                         </a>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleCopy(link.shortedUrl)}
+                          onClick={() => handleCopy(link.shortenedUrl)}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -299,7 +299,7 @@ export function UrlShortener() {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(link.shortedUrl)}
+                                onClick={() => handleDelete(link.shortenedUrl)}
                               >
                                 Excluir
                               </AlertDialogAction>
@@ -328,7 +328,7 @@ export function UrlShortener() {
                       variant="outline"
                       size="icon"
                       onClick={() => handlePageChange(pagination.page - 1)}
-                      disabled={pagination.page <= 1}
+                      disabled={pagination.page <= 0}
                     >
                       <ChevronLeft className="h-4 w-4" />
                       <span className="sr-only">Anterior</span>
@@ -337,7 +337,7 @@ export function UrlShortener() {
 
                   <div className="hidden sm:flex items-center gap-1">
                     {paginationRange.map((page, index) => (
-                      <PaginationItem key={index}>
+                      <PaginationItem key={typeof page === "string" ? `dots-${index}` : `page-${page}`}>
                         {typeof page === "string" ? (
                           <span className="px-2">...</span>
                         ) : (
@@ -348,7 +348,7 @@ export function UrlShortener() {
                             size="icon"
                             onClick={() => handlePageChange(page)}
                           >
-                            {page}
+                            {page + 1}
                           </Button>
                         )}
                       </PaginationItem>
@@ -357,7 +357,7 @@ export function UrlShortener() {
 
                   <PaginationItem className="sm:hidden">
                     <span className="px-4 py-2 text-sm font-medium">
-                      Página {pagination.page} de {totalPages}
+                      Página {pagination.page + 1} de {totalPages}
                     </span>
                   </PaginationItem>
 
@@ -366,7 +366,7 @@ export function UrlShortener() {
                       variant="outline"
                       size="icon"
                       onClick={() => handlePageChange(pagination.page + 1)}
-                      disabled={pagination.page >= totalPages}
+                      disabled={pagination.page >= totalPages - 1}
                     >
                       <ChevronRight className="h-4 w-4" />
                       <span className="sr-only">Próximo</span>
