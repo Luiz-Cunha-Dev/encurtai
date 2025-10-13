@@ -1,5 +1,5 @@
 export interface ShortLink {
-  shortedUrl: string;
+  shortenedUrl: string;
   mainUrl: string;
 }
 
