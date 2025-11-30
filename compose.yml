@@ -60,6 +60,8 @@ services:
     networks:
       encurta-ai-network:
         ipv4_address: 10.200.0.40
+    depends_on:
+      - short-link-manager-mongo
 
   short-link-manager-sidecar:
     build:
@@ -120,6 +122,8 @@ services:
     networks:
       encurta-ai-network:
         ipv4_address: 10.200.0.70
+    depends_on:
+      - short-link-key-redis
 
   short-link-key-sidecar:
     build:
@@ -141,7 +145,7 @@ services:
       - short-link-key-service
       - consul
       - consul-config
-
+  
   consul-ingress-gateway:
     build:
       context: ./consul/envoy
@@ -166,6 +170,26 @@ services:
     depends_on:
       - consul
       - consul-config
+
+  short-link-key-redis:
+    image: redis/redis-stack:7.4.0-v8
+    container_name: encurta-ai-short-link-key-redis
+    networks:
+      encurta-ai-network:
+    volumes:
+      - short-link-key-redis-data:/data
+
+  short-link-manager-mongo:
+    image: mongo:8.0
+    container_name: encurta-ai-short-link-manager-mongo
+    volumes:
+      - short-link-manager-mongo-data:/data/db
+    networks:
+      encurta-ai-network:
+
+volumes:
+  short-link-key-redis-data:
+  short-link-manager-mongo-data:
 
 networks:
   encurta-ai-network:

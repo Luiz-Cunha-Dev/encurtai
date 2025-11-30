@@ -3,13 +3,13 @@ package com.encurtador.short_link_manager_service.service
 import com.encurtador.short_link_manager_service.client.ShortLinkKeyServiceClient
 import com.encurtador.short_link_manager_service.dto.ShortenLinkResponseDto
 import com.encurtador.short_link_manager_service.model.ShortenedLink
-import com.encurtador.short_link_manager_service.repository.ShortLinkManagerRepository
+import com.encurtador.short_link_manager_service.repository.ShortLinkManagerMongoRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class ShortenLinkService(
-    private val repository: ShortLinkManagerRepository,
+    private val repository: ShortLinkManagerMongoRepository,
     @Value("\${encurta-ai.kong.url}")
     private val kongUrl: String,
     private val client: ShortLinkKeyServiceClient
@@ -22,6 +22,7 @@ class ShortenLinkService(
         val keyResponse = client.getUniqueTokenId()
         val shortenedUrl = generateShortenedUrl(keyResponse.uniqueTokenId)
         val shortenedLink = ShortenedLink(
+            id = shortenedUrl.substringAfterLast("/"),
             mainUrl = mainUrl,
             shortenedUrl = shortenedUrl
         )

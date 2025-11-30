@@ -1,15 +1,14 @@
 package com.encurtador.short_link_manager_service.service
 
-import com.encurtador.short_link_manager_service.repository.ShortLinkManagerRepository
+import com.encurtador.short_link_manager_service.repository.ShortLinkManagerMongoRepository
 import org.springframework.stereotype.Service
 
 @Service
 class DeleteLinkService(
-    private val repository: ShortLinkManagerRepository
+    private val repository: ShortLinkManagerMongoRepository
 ) {
     fun execute(key: String) {
-        if (repository.delete(key) == null) {
-            throw NoSuchElementException("Link not found")
-        }
+        val shortenedLink = repository.findById(key).orElseThrow { NoSuchElementException("Link not found") }
+        repository.delete(shortenedLink)
     }
 }
