@@ -16,11 +16,8 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Slf4j
 public class ShortLinkManagerClient {
-
     private final WebClient webClient;
-
-    @Value("${encurta-ai.short-link-manager.url}")
-    private String shortLinkManagerUrl;
+    @Value("${encurta-ai.short-link-manager.url}") private String shortLinkManagerUrl;
 
     @CircuitBreaker(name = "shortLinkManager", fallbackMethod = "fallbackGetMainUrl")
     public Mono<GetMainUrlResponseDto> getMainUrl(String token) {

@@ -17,9 +17,9 @@ RUN apk add --no-cache wget
 
 COPY --from=builder /app/target/*.jar app.jar
 
-EXPOSE 8083
+EXPOSE 8082
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD wget -qO- http://localhost:8083/actuator/health || exit 1
+    CMD wget -qO- http://localhost:8082/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

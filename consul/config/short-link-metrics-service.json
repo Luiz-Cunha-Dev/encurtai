@@ -1,0 +1,25 @@
+{
+  "service": {
+    "id": "short-link-metrics-service",
+    "name": "short-link-metrics-service",
+    "address": "10.200.0.90",
+    "port": 8083,
+    "connect": {
+      "sidecar_service": {
+        "proxy": {
+          "config": {
+            "local_service_address": "127.0.0.1",
+            "local_service_port": 8083
+          }
+        }
+      }
+    },
+    "checks": [
+      {
+        "http": "http://10.200.0.90:8083/actuator/health",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    ]
+  }
+}

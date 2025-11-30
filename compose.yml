@@ -92,6 +92,9 @@ services:
     networks:
       encurta-ai-network:
         ipv4_address: 10.200.0.60
+    depends_on:
+      short-link-rabbitmq:
+        condition: service_healthy
 
   redirect-service-sidecar:
     build:
@@ -182,14 +185,81 @@ services:
   short-link-manager-mongo:
     image: mongo:8.0
     container_name: encurta-ai-short-link-manager-mongo
-    volumes:
-      - short-link-manager-mongo-data:/data/db
     networks:
       encurta-ai-network:
+    volumes:
+      - short-link-manager-mongo-data:/data/db
+
+  short-link-rabbitmq:
+    image: rabbitmq:3.9-management
+    container_name: encurta-ai-short-link-rabbitmq
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      RABBITMQ_DEFAULT_USER: shortlink
+      RABBITMQ_DEFAULT_PASS: shortlinkpassword
+      RABBITMQ_DEFAULT_VHOST: /
+    networks:
+      encurta-ai-network:
+    volumes:
+      - short-link-rabbitmq-data:/var/lib/rabbitmq
+
+  short-link-metrics-service:
+    build:
+      context: ./short-link-metrics-service
+      dockerfile: Dockerfile
+    container_name: encurta-ai-short-link-metrics-service
+    networks:
+      encurta-ai-network:
+        ipv4_address: 10.200.0.90
+    depends_on:
+      short-link-metrics-redis:
+        condition: service_started
+      short-link-rabbitmq:
+        condition: service_healthy
+      redirect-service:
+        condition: service_healthy
+      
+
+  short-link-metrics-service-sidecar:
+    build:
+      context: ./consul/envoy
+      dockerfile: Dockerfile
+    container_name: encurta-ai-short-link-metrics-service-sidecar
+    network_mode: "container:encurta-ai-short-link-metrics-service"
+    command: >
+      consul connect envoy -sidecar-for short-link-metrics-service
+      -http-addr=10.200.0.20:8500
+      -grpc-addr=10.200.0.20:8502
+      -admin-bind=127.0.0.1:19000
+      -ignore-envoy-compatibility
+      -- -l trace
+    environment:
+      CONSUL_HTTP_ADDR: "10.200.0.20:8500"
+      CONSUL_GRPC_ADDR: "10.200.0.20:8502"
+    depends_on:
+      - short-link-metrics-service
+      - consul
+      - consul-config
+
+  short-link-metrics-redis:
+    image: redis/redis-stack:7.4.0-v8
+    container_name: encurta-ai-short-link-metrics-redis
+    networks:
+      encurta-ai-network:
+    volumes:
+      - short-link-metrics-redis-data:/data
 
 volumes:
   short-link-key-redis-data:
   short-link-manager-mongo-data:
+  short-link-rabbitmq-data:
+  short-link-metrics-redis-data:
 
 networks:
   encurta-ai-network:

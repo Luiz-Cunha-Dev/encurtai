@@ -13,11 +13,21 @@ listeners = [
     ]
   },
   {
-    port     = 8083
+    port     = 8082
     protocol = "http"
     services = [
       {
         name  = "redirect-service"
+        hosts = ["*"]
+      }
+    ]
+  },
+  {
+    port     = 8083
+    protocol = "http"
+    services = [
+      {
+        name  = "short-link-metrics-service"
         hosts = ["*"]
       }
     ]

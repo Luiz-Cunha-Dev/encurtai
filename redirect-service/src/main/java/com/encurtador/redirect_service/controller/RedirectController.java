@@ -16,7 +16,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class RedirectController {
-
     private final RedirectService redirectService;
 
     @GetMapping
@@ -28,7 +27,7 @@ public class RedirectController {
                     return Mono.just(ResponseEntity.status(302).headers(headers).build());
                 })
                 .doOnSubscribe(s -> log.info("Received redirect request for short URL key: {}", shortUrlKey))
-                .doOnSuccess(response -> log.info("Redirecting to main URL for short URL key: {}", shortUrlKey))
-                .doOnError(e -> log.error("Error processing redirect for short URL key: {}", shortUrlKey, e));
+                .doOnError(e -> log.error("Error processing redirect for short URL key: {}", shortUrlKey, e))
+                .doOnSuccess(response -> log.info("Redirecting to main URL for short URL key: {}", shortUrlKey));
     }
 }

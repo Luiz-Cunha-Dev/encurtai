@@ -15,11 +15,21 @@ services:
         strip_path: true
 
   - name: redirect-service
-    url: http://10.200.0.80:8083
+    url: http://10.200.0.80:8082
     routes:
       - name: redirect-service-route
         paths:
           - /rs
+        methods:
+          - GET
+        strip_path: true
+
+  - name: short-link-metrics-service
+    url: http://10.200.0.80:8083
+    routes:
+      - name: short-link-metrics-service-route
+        paths:
+          - /smts
         methods:
           - GET
         strip_path: true
