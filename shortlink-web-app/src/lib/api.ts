@@ -1,4 +1,4 @@
-import { PaginatedResponse } from "@/types";
+import {PaginatedResponse} from "@/types";
 
 const API_BASE_URL = "/api";
 
@@ -36,8 +36,14 @@ export async function deleteShortLink(token: string): Promise<void> {
 
 export async function getLinkMetrics(token: string): Promise<{ count: number }> {
   const response = await fetch(`${API_BASE_URL}/smts/metrics/${token}`);
+
+  if (response.status === 404) {
+    return { count: 0 };
+  }
+
   if (!response.ok) {
     throw new Error("Failed to fetch metrics");
   }
+
   return response.json();
 }
