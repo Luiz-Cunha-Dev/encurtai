@@ -33,3 +33,11 @@ export async function deleteShortLink(token: string): Promise<void> {
     throw new Error("Failed to delete link");
   }
 }
+
+export async function getLinkMetrics(token: string): Promise<{ count: number }> {
+  const response = await fetch(`${API_BASE_URL}/smts/metrics/${token}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch metrics");
+  }
+  return response.json();
+}

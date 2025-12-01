@@ -15,8 +15,20 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:8000/:path*',
+        source: '/api/sms/:path*',
+        destination: 'http://localhost:8000/sms/:path*',
+      },
+      {
+        source: '/api/sms',
+        destination: 'http://localhost:8000/sms',
+      },
+      {
+        source: '/api/rs/:path*',
+        destination: 'http://localhost:8000/rs/:path*',
+      },
+      {
+        source: '/api/smts/:path*',
+        destination: 'http://localhost:8000/smts/:path*',
       },
     ];
   },

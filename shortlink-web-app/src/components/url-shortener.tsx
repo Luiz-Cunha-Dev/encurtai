@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Copy, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Copy, Trash2, ChevronLeft, ChevronRight, BarChart3, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,14 +42,85 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import type { ShortLink, Pagination as PaginationType } from "@/types";
-import { createShortLink, deleteShortLink, getLinks } from "@/lib/api";
+import { createShortLink, deleteShortLink, getLinks, getLinkMetrics } from "@/lib/api";
 
 const formSchema = z.object({
   mainUrl: z.string().url({ message: "Por favor, insira uma URL válida." }),
 });
+
+function MetricsButton({ token }: { token: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [metrics, setMetrics] = useState<{ count: number } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchMetrics = async () => {
+    setIsLoading(true);
+    setMetrics(null);
+    try {
+      const data = await getLinkMetrics(token);
+      setMetrics(data);
+    } catch (error) {
+      toast.error("Falha ao buscar métricas.", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Tente novamente mais tarde.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      fetchMetrics();
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" title="Ver métricas">
+          <BarChart3 className="h-4 w-4 text-blue-500" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Métricas do Link</DialogTitle>
+          <DialogDescription>
+            Estatísticas de acesso para este link encurtado.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center py-8">
+          {isLoading ? (
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          ) : metrics !== null ? (
+            <div className="text-center">
+              <div className="text-5xl font-bold text-primary">{metrics.count}</div>
+              <p className="text-muted-foreground mt-2">
+                {metrics.count === 1 ? "acesso" : "acessos"}
+              </p>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Não foi possível carregar as métricas.</p>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export function UrlShortener() {
   const [links, setLinks] = useState<ShortLink[]>([]);
@@ -245,6 +316,7 @@ export function UrlShortener() {
                         <div className="flex justify-end gap-2">
                           <Skeleton className="h-8 w-8" />
                           <Skeleton className="h-8 w-8" />
+                          <Skeleton className="h-8 w-8" />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -277,12 +349,14 @@ export function UrlShortener() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleCopy(link.shortenedUrl)}
+                          title="Copiar link"
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
+                        <MetricsButton token={link.shortenedUrl.split("/").pop() || ""} />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" title="Excluir link">
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </AlertDialogTrigger>
