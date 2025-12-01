@@ -3,7 +3,7 @@ _transform: true
 
 services:
   - name: shortlink-manager-service
-    url: http://10.200.0.40:8080
+    url: http://10.200.0.80:8080
     routes:
       - name: shortlink-manager-service-route
         paths:
@@ -15,7 +15,7 @@ services:
         strip_path: true
 
   - name: redirect-service
-    url: http://10.200.0.60:8082
+    url: http://10.200.0.80:8082
     routes:
       - name: redirect-service-route
         paths:
@@ -25,7 +25,7 @@ services:
         strip_path: true
 
   - name: short-link-metrics-service
-    url: http://10.200.0.90:8083
+    url: http://10.200.0.80:8083
     routes:
       - name: short-link-metrics-service-route
         paths:
