@@ -177,6 +177,7 @@ services:
   short-link-key-redis:
     image: redis/redis-stack:7.4.0-v8
     container_name: encurta-ai-short-link-key-redis
+    command: ["redis-server", "--appendonly", "yes", "--protected-mode", "no"]
     networks:
       encurta-ai-network:
     volumes:
@@ -250,6 +251,7 @@ services:
   short-link-metrics-redis:
     image: redis/redis-stack:7.4.0-v8
     container_name: encurta-ai-short-link-metrics-redis
+    command: ["redis-server", "--appendonly", "yes", "--protected-mode", "no"]
     networks:
       encurta-ai-network:
     volumes:
