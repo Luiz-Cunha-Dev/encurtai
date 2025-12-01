@@ -37,12 +37,12 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-amqp-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-redis-reactive-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
-    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:5.0.0")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    testImplementation("io.mockk:mockk:1.14.6")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
